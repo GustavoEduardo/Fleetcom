@@ -12,7 +12,6 @@ import {
   UseInterceptors,
 } from '@nestjs/common';
 import { UserService } from './user.service';
-import { User } from './user.schema';
 import { CreateUserDto, EditUserDto, ResUserDto } from './user.dto';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
@@ -96,7 +95,7 @@ export class UserController {
     description: 'Usuário editado com sucesso',
     type: ResUserDto,
   })
-  update(@Param('id') id: string, @Body() data: Partial<User>) {
+  update(@Param('id') id: string, @Body() data: Partial<any>) {
     return this.userService.update(id, data);
   }
 

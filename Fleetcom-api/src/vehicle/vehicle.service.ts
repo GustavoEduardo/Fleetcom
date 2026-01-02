@@ -1,47 +1,50 @@
 import {
   BadRequestException,
+  ConflictException,
   Injectable,
   NotFoundException,
-  ConflictException,
 } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { FilterQuery, Model } from 'mongoose';
-import { Vehicle, VehicleStatus } from './vehicle.schema';
 import {
   CreateVehicleDto,
   UpdateVehicleDto,
   VehicleFilterDTO,
   ReserveVehicleDto,
 } from './vehicle.dto';
-import { Reservation } from 'src/reservation/reservation.schema';
-import path from 'path';
+import * as path from 'path';
 import * as fs from 'fs';
+import { PrismaService } from '../prisma/prisma.service';
+import { VehicleStatus } from '@prisma/client';
 
 @Injectable()
 export class VehicleService {
-  constructor(
-    @InjectModel(Vehicle.name) private vehicleModel: Model<Vehicle>,
-    @InjectModel(Reservation.name) private reservationModel: Model<Reservation>,
-  ) {}
+  constructor(private readonly prisma: PrismaService) {}
 
   async insertMany(data: CreateVehicleDto[]) {
-    return await this.vehicleModel.insertMany(data);
+    return this.prisma.vehicle.createMany({
+      data,
+    });
   }
 
   async create(data: CreateVehicleDto) {
-    return await this.vehicleModel.create(data);
+    return this.prisma.vehicle.create({ data });
   }
 
   async update(id: string, data: UpdateVehicleDto) {
-    const vehicle = await this.vehicleModel.findByIdAndUpdate(id, data, {
-      new: true,
-    });
-    if (!vehicle) throw new NotFoundException('Veículo não encontrado');
-    return vehicle;
+    try {
+      return await this.prisma.vehicle.update({
+        where: { id },
+        data,
+      });
+    } catch {
+      throw new NotFoundException('Veículo não encontrado');
+    }
   }
 
   async remove(id: string) {
-    const vehicle = await this.vehicleModel.findById(id);
+    const vehicle = await this.prisma.vehicle.findFirst({
+      where: { id, deletedAt: null },
+    });
+
     if (!vehicle) throw new NotFoundException('Veículo não encontrado');
 
     if (vehicle.status === VehicleStatus.RESERVED) {
@@ -61,130 +64,153 @@ export class VehicleService {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
 
-    await this.vehicleModel.findByIdAndDelete(id);
-    return { message: 'Veículo removido permanentemente' };
+    // soft delete
+    await this.prisma.vehicle.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
+
+    return { message: 'Veículo removido' };
   }
 
   async findAll(filters: VehicleFilterDTO) {
-    const query: FilterQuery<Vehicle> = {};
-
-    if (filters.status) query.status = filters.status;
-
-    if (filters.type && filters.type.length > 0) {
-      query.type = { $in: filters.type.split(',') };
-    }
-
-    if (filters.status) query.status = filters.status;
-
-    if (filters.year && filters.year.length > 0) {
-      query.year = { $in: filters.year.split(',') };
-    }
-
-    if (filters.type && filters.type.length > 0) {
-      query.type = { $in: filters.type.split(',') };
-    }
-
-    if (filters.engine && filters.engine.length > 0) {
-      query.engine = { $in: filters.engine.split(',') };
-    }
-
-    if (filters.size && filters.size.length > 0) {
-      query.size = { $in: filters.size.split(',') };
-    }
-
-    if (filters.name) {
-      query.name = {
-        $regex: filters.name,
-        $options: 'i',
-      };
-    }
-
-    if (filters.search) {
-      query.name = {
-        $regex: filters.search,
-        $options: 'i',
-      };
-    }
-
-    return this.vehicleModel.find(query).exec();
+    return this.prisma.vehicle.findMany({
+      where: {
+        deletedAt: null,
+        status: filters.status,
+        type: filters.type ? { in: filters.type.split(',') } : undefined,
+        year: filters.year ? { in: filters.year.split(',') } : undefined,
+        engine: filters.engine ? { in: filters.engine.split(',') } : undefined,
+        size: filters.size ? { in: filters.size.split(',') } : undefined,
+        name: filters.search
+          ? { contains: filters.search, mode: 'insensitive' }
+          : undefined,
+      },
+    });
   }
 
-  async findById(id: string): Promise<Vehicle> {
-    const vehicle = await this.vehicleModel.findById(id);
+  async findById(id: string) {
+    const vehicle = await this.prisma.vehicle.findFirst({
+      where: { id, deletedAt: null },
+    });
+
     if (!vehicle) throw new NotFoundException('Nenhum veículo encontrado');
     return vehicle;
   }
 
   async reserveVehicle(id: string, dto: ReserveVehicleDto) {
-    const vehicle = await this.vehicleModel.findById(id);
+    const vehicle = await this.prisma.vehicle.findFirst({
+      where: { id, deletedAt: null },
+    });
+
     if (!vehicle) throw new NotFoundException('Veículo não encontrado');
 
     if (vehicle.status === VehicleStatus.RESERVED) {
       throw new ConflictException('Veículo já está reservado no momento');
     }
 
-    const reservation = await this.reservationModel.create({
-      vehicle: id,
-      user: dto.userId,
-      reservedFrom: dto.reservedFrom,
-      reservedUntil: dto.reservedUntil,
+    const reservation = await this.prisma.reservation.create({
+      data: {
+        vehicleId: id,
+        userId: dto.userId,
+        reservedFrom: dto.reservedFrom,
+        reservedUntil: dto.reservedUntil,
+      },
     });
 
-    vehicle.status = VehicleStatus.RESERVED;
-    vehicle.reservedBy = dto.userId;
-    vehicle.reservedFrom = reservation.reservedFrom;
-    vehicle.reservedUntil = reservation.reservedUntil;
-    await vehicle.save();
+    const updatedVehicle = await this.prisma.vehicle.update({
+      where: { id },
+      data: {
+        status: VehicleStatus.RESERVED,
+        reservedBy: dto.userId,
+        reservedFrom: dto.reservedFrom,
+        reservedUntil: dto.reservedUntil,
+      },
+    });
 
-    return { message: 'Reserva efetuada com sucesso', reservation, vehicle };
+    return {
+      message: 'Reserva efetuada com sucesso',
+      reservation,
+      vehicle: updatedVehicle,
+    };
   }
 
   async releaseVehicle(id: string) {
-    const vehicle = await this.vehicleModel.findById(id);
+    const vehicle = await this.prisma.vehicle.findFirst({
+      where: { id, deletedAt: null },
+    });
+
     if (!vehicle) throw new NotFoundException('Veículo não encontrado');
 
     if (vehicle.status !== VehicleStatus.RESERVED) {
       throw new BadRequestException('Veículo não está reservado');
     }
 
-    await this.reservationModel.updateOne(
-      { vehicle: id, user: vehicle.reservedBy, returnedAt: null },
-      { returnedAt: new Date() },
-    );
+    await this.prisma.reservation.updateMany({
+      where: {
+        vehicleId: id,
+        userId: vehicle.reservedBy!,
+        returnedAt: null,
+      },
+      data: { returnedAt: new Date() },
+    });
 
-    vehicle.status = VehicleStatus.AVAILABLE;
-    vehicle.reservedBy = null;
-    vehicle.reservedFrom = null;
-    vehicle.reservedUntil = null;
-    await vehicle.save();
+    const updatedVehicle = await this.prisma.vehicle.update({
+      where: { id },
+      data: {
+        status: VehicleStatus.AVAILABLE,
+        reservedBy: null,
+        reservedFrom: null,
+        reservedUntil: null,
+      },
+    });
 
-    return { message: 'Reserva finalizada com sucesso', vehicle };
+    return {
+      message: 'Reserva finalizada com sucesso',
+      vehicle: updatedVehicle,
+    };
   }
 
   async findReservedByUser(userId: string) {
-    return this.reservationModel
-      .find({ user: userId })
-      .populate('vehicle', 'name year type engine size');
-  }
-
-  async getVehicleFilters(): Promise<any> {
-    return await this.vehicleModel.aggregate([
-      {
-        $facet: {
-          types: [
-            { $group: { _id: '$type' } },
-            { $project: { _id: 0, value: '$_id' } },
-          ],
-          engines: [
-            { $group: { _id: '$engine' } },
-            { $project: { _id: 0, value: '$_id' } },
-          ],
-          sizes: [
-            { $group: { _id: '$size' } },
-            { $project: { _id: 0, value: '$_id' } },
-          ],
+    return this.prisma.reservation.findMany({
+      where: { userId },
+      include: {
+        vehicle: {
+          select: {
+            name: true,
+            year: true,
+            type: true,
+            engine: true,
+            size: true,
+          },
         },
       },
+    });
+  }
+
+  async getVehicleFilters() {
+    const [types, engines, sizes] = await Promise.all([
+      this.prisma.vehicle.findMany({
+        where: { deletedAt: null },
+        distinct: ['type'],
+        select: { type: true },
+      }),
+      this.prisma.vehicle.findMany({
+        where: { deletedAt: null },
+        distinct: ['engine'],
+        select: { engine: true },
+      }),
+      this.prisma.vehicle.findMany({
+        where: { deletedAt: null },
+        distinct: ['size'],
+        select: { size: true },
+      }),
     ]);
+
+    return {
+      types: types.map((t) => ({ value: t.type })),
+      engines: engines.map((e) => ({ value: e.engine })),
+      sizes: sizes.map((s) => ({ value: s.size })),
+    };
   }
 }

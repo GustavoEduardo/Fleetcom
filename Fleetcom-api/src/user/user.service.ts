@@ -1,4 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   BadRequestException,
   ConflictException,
@@ -7,81 +6,115 @@ import {
   UnauthorizedException,
   UnprocessableEntityException,
 } from '@nestjs/common';
-import { User } from './user.schema';
-import { InjectModel } from '@nestjs/mongoose';
-import { Model } from 'mongoose';
 import { CreateUserDto, EditUserDto } from './user.dto';
 import * as bcrypt from 'bcrypt';
-import { ConfigService } from '@nestjs/config';
 import * as fs from 'fs';
 import * as path from 'path';
-import { Reservation } from 'src/reservation/reservation.schema';
-import { Vehicle, VehicleStatus } from 'src/vehicle/vehicle.schema';
+import { PrismaService } from '../prisma/prisma.service';
+import { ConfigService } from '@nestjs/config';
+import { VehicleStatus } from '@prisma/client';
 
 @Injectable()
 export class UserService {
   constructor(
-    @InjectModel(User.name)
-    private readonly userModel: Model<User>,
-
-    @InjectModel(Reservation.name)
-    private readonly reservationModel: Model<Reservation>,
-
-    @InjectModel(Vehicle.name)
-    private readonly vehicleModel: Model<Vehicle>,
-
+    private readonly prisma: PrismaService,
     private readonly configService: ConfigService,
   ) {}
 
-  async create(data: CreateUserDto): Promise<Partial<User>> {
+  async create(data: CreateUserDto) {
     if (data.password !== data.password_confirm) {
       throw new UnprocessableEntityException('As senhas não correspondem');
     }
 
-    const existe = await this.userModel.findOne({ email: data.email });
-    if (existe)
+    const existe = await this.prisma.user.findFirst({
+      where: {
+        email: data.email,
+        deletedAt: null,
+      },
+    });
+
+    if (existe) {
       throw new ConflictException('Email já cadastrado para outro usuário');
+    }
 
     const salt = Number(this.configService.get<number>('SALT'));
-    data.password = await bcrypt.hash(data.password, salt);
+    const hashedPassword = await bcrypt.hash(data.password, salt);
 
-    const newUser = await this.userModel.create(data);
-    const { password: _, ...userWithoutPass } = newUser.toObject();
-    return userWithoutPass;
+    const user = await this.prisma.user.create({
+      data: {
+        name: data.name,
+        email: data.email,
+        password: hashedPassword,
+        avatarUrl: data.avatarUrl,
+      },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatarUrl: true,
+        role: true,
+        createdAt: true,
+      },
+    });
+
+    return user;
   }
 
-  async findAll(): Promise<User[]> {
-    return this.userModel.find().exec();
+  async findAll() {
+    return this.prisma.user.findMany({
+      where: { deletedAt: null },
+      select: {
+        id: true,
+        name: true,
+        email: true,
+        avatarUrl: true,
+        role: true,
+        createdAt: true,
+      },
+    });
   }
 
-  async findById(id: string): Promise<User> {
-    const user = await this.userModel.findById(id);
+  async findById(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
+    });
+
     if (!user) throw new NotFoundException('Nenhum usuário encontrado');
     return user;
   }
 
-  async findToLogin(email: string): Promise<User> {
-    const user = await this.userModel.findOne({ email }).select('+password');
-    if (!user) throw new UnauthorizedException('Usuário ou senha incorretos');
+  async findToLogin(email: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { email, deletedAt: null },
+      select: {
+        id: true,
+        email: true,
+        password: true,
+        role: true,
+        name: true,
+      },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Usuário ou senha incorretos');
+    }
+
     return user;
   }
 
-  async findByEmailToSeed(email: string): Promise<User | null> {
-    return this.userModel.findOne({ email }).select('+password').exec();
-  }
+  async update(id: string, data: EditUserDto) {
+    const user = await this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
+      select: {
+        id: true,
+        password: true,
+      },
+    });
 
-  async update(id: string, data: EditUserDto): Promise<User> {
-    const user = await this.userModel.findById(id).select('+password');
     if (!user) throw new NotFoundException('Usuário não encontrado');
 
-    if (data.name) user.name = data.name;
-    if (data.email) user.email = data.email;
-    if (data.avatarUrl) user.avatarUrl = data.avatarUrl;
-    // if (data.role) user.role = data.role; Apenas ADMIN
-
-    // Senha
+    // troca de senha
     if (data.password || data.old_password || data.password_confirm) {
-      // Garantir que os três campos foram enviados
       if (!data.old_password || !data.password || !data.password_confirm) {
         throw new BadRequestException(
           'Para mudar a senha envie a nova senha, a confirmação da nova senha e a senha antiga',
@@ -96,40 +129,53 @@ export class UserService {
       if (!match) throw new UnauthorizedException('Senha atual incorreta');
 
       const salt = Number(this.configService.get<number>('SALT'));
-      user.password = await bcrypt.hash(data.password, salt);
+      data.password = await bcrypt.hash(data.password, salt);
     }
 
-    return await user.save();
+    return this.prisma.user.update({
+      where: { id },
+      data: {
+        name: data.name,
+        email: data.email,
+        avatarUrl: data.avatarUrl,
+        password: data.password,
+      },
+    });
   }
 
-  async remove(id: string): Promise<{ message: string }> {
-    const user = await this.userModel.findById(id);
-    if (!user) throw new NotFoundException('Usuário não encontrado');
-
-    const reservations = await this.reservationModel.find({
-      user: id,
-      active: true,
+  async remove(id: string) {
+    const user = await this.prisma.user.findFirst({
+      where: { id, deletedAt: null },
     });
 
-    // Se existir, liberar o veículo reservado antes de excluir usuário
-    if (reservations.length > 0) {
-      for (const reservation of reservations) {
-        const vehicle = await this.vehicleModel.findById(reservation.vehicleId);
+    if (!user) throw new NotFoundException('Usuário não encontrado');
 
-        if (vehicle) {
-          vehicle.status = VehicleStatus.AVAILABLE;
-          vehicle.reservedBy = null;
-          vehicle.reservedFrom = null;
-          vehicle.reservedUntil = null;
-          await vehicle.save();
-        }
+    // Buscar reservas ativas
+    const reservations = await this.prisma.reservation.findMany({
+      where: {
+        userId: id,
+        cancelled: false,
+      },
+    });
 
-        reservation.cancelled = true;
-        await reservation.save();
-      }
+    for (const reservation of reservations) {
+      await this.prisma.vehicle.update({
+        where: { id: reservation.vehicleId },
+        data: {
+          status: VehicleStatus.AVAILABLE,
+          reservedBy: null,
+          reservedFrom: null,
+          reservedUntil: null,
+        },
+      });
+
+      await this.prisma.reservation.update({
+        where: { id: reservation.id },
+        data: { cancelled: true },
+      });
     }
 
-    // Remover avatar da pasta pública
+    // remover avatar
     if (user.avatarUrl) {
       const filePath = path.join(
         __dirname,
@@ -141,8 +187,12 @@ export class UserService {
       if (fs.existsSync(filePath)) fs.unlinkSync(filePath);
     }
 
-    await this.userModel.deleteOne({ _id: id });
+    // soft delete
+    await this.prisma.user.update({
+      where: { id },
+      data: { deletedAt: new Date() },
+    });
 
-    return { message: `Usuário removido` };
+    return { message: 'Usuário removido' };
   }
 }

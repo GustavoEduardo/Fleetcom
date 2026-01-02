@@ -6,8 +6,8 @@ import {
   IsString,
   MinLength,
 } from 'class-validator';
-import { UserRole } from './user.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { UserRole } from '@prisma/client';
 
 export class ResUserDto {
   @ApiProperty()

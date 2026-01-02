@@ -6,8 +6,8 @@ import {
   IsDateString,
   IsEnum,
 } from 'class-validator';
-import { VehicleStatus } from './vehicle.schema';
 import { ApiProperty } from '@nestjs/swagger';
+import { VehicleStatus } from '@prisma/client';
 
 export class CreateVehicleDto {
   @ApiProperty()

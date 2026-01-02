@@ -1,0 +1,60 @@
+-- PRISMA
+
+
+-- Para resetar migrates >>> npx prisma migrate reset
+
+-- Rodar após alterações no schema.prisma...
+
+-- migrate >>> npx prisma migrate dev --name descricao-da-migrate
+-- gerar types >>> npx prisma generate
+-- seed >>> npx prisma db seed
+
+
+
+
+-- postgree
+
+/*
+  sudo systemctl start postgresql
+  restart, stop
+
+ Start
+  sudo -i -u postgres
+  psql -d fleetcom
+  (psql sem nada entra como postgres)
+
+
+  \d -> lista as tabelas
+  \q -> sai do psql
+
+  >>>>>>>>>>>>> Usuários:
+  listar:
+  \du
+
+  Criar:
+  CREATE USER api WITH PASSWORD 'mudar123';
+
+  Fazer ser dono do banco:
+  ALTER DATABASE fleetcom OWNER TO api;
+
+
+  Conceder permissões no schema public ( user "postgres"):
+  \c fleetcom
+
+  dar permissões:
+  GRANT ALL ON SCHEMA public TO api;
+  ALTER SCHEMA public OWNER TO api;
+  ALTER USER api CREATEDB;
+
+  Permissões importantes para migrations:
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON TABLES TO api;
+
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON SEQUENCES TO api;
+
+  ALTER DEFAULT PRIVILEGES IN SCHEMA public
+  GRANT ALL ON FUNCTIONS TO api;
+
+*/
+

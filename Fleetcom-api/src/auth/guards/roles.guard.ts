@@ -5,8 +5,8 @@ import {
   ForbiddenException,
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
+import { UserRole } from '@prisma/client';
 import { ROLES_KEY } from 'src/common/decorators/roles.decorator';
-import { UserRole } from 'src/user/user.schema';
 
 interface RequestUser {
   sub: string;
