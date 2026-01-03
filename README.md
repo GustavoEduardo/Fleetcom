@@ -57,6 +57,12 @@ Ou, se preferir rodar em segundo plano:
 docker compose up -d
 ```
 
+##### Para criar o usuários de teste e os primeiros dados rode (após subir a docker):
+
+``` bash
+docker exec -it fleetcom-api npx prisma db seed
+```
+
 Após subir os serviços:
 
 -   **Frontend** disponível em:\
@@ -69,6 +75,7 @@ Após subir os serviços:
     👉 http://localhost:3000/docs
 
 -   **MongoDB** disponível internamente no Docker
+
 
 ------------------------------------------------------------------------
 

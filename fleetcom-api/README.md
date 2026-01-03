@@ -44,8 +44,12 @@ docker compose up --build -d
 
 ---
 
-### 👮 Usuário Admin gerado automaticamente
-Seed executado no boot da aplicação.
+##### Para criar o usuários de teste e os primeiros dados rode (após subir a docker):
+
+``` bash
+docker exec -it fleetcom-api npx prisma db seed
+```
+
 
 ```json
 { "access_token": "jwt..." }

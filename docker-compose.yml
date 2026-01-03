@@ -4,34 +4,40 @@ services:
     container_name: fleetcom-postgres
     restart: always
     environment:
-      POSTGRES_USER: api
-      POSTGRES_PASSWORD: mudar123
-      POSTGRES_DB: fleetcom
-    ports:
-      - "5432:5432"
+      POSTGRES_USER: ${PRISMA_PASS}
+      POSTGRES_PASSWORD: ${PRISMA_USER}
+      POSTGRES_DB: ${PRISMA_DB_NAME}
     volumes:
       - postgres_data:/var/lib/postgresql/data
 
-  Fleetcom-api:
-    build: ./Fleetcom-api
-    container_name: Fleetcom-api
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U api -d fleetcom"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+  fleetcom-api:
+    build: ./fleetcom-api
+    container_name: fleetcom-api
     env_file:
-      - ./Fleetcom-api/.env
+      - ./fleetcom-api/.env
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
     ports:
       - "3000:3000"
+    restart: always
 
-  Fleetcom-app:
+  fleetcom-app:
     build:
-      context: ./Fleetcom-app
+      context: ./fleetcom-app
       dockerfile: Dockerfile
-    container_name: Fleetcom-app
+    container_name: fleetcom-app
     ports:
       - "4200:80"
     depends_on:
-      - Fleetcom-api
-
+      - fleetcom-api
+    restart: always
 
 volumes:
   postgres_data:
