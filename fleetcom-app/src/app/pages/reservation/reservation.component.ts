@@ -192,7 +192,7 @@ export class ReservationComponent {
 
     this.searchTimeout = setTimeout(() => {
       this.getVehicles();
-    }, 600);
+    }, 200);
   }
 
   openFilters(open: boolean) {
@@ -200,14 +200,14 @@ export class ReservationComponent {
   }
 
   selectCar(car: Vehicle) {
-    this.reservationForm.get('vehicleId')?.setValue(car._id);
+    this.reservationForm.get('vehicleId')?.setValue(car.id);
 
     setTimeout(() => {
       document.getElementById('selectTimeRange')?.scrollIntoView({
         behavior: 'smooth',
         block: 'start',
       });
-    }, 200);
+    }, 800);
   }
 
   reserveVehicle() {
@@ -235,7 +235,7 @@ export class ReservationComponent {
 
   cancel() {
     this.loadingCreate = true;
-    this.reservationService.calcel(this.reservations[0]._id).subscribe({
+    this.reservationService.calcel(this.reservations[0].id).subscribe({
       next: (res) => {
         this.loadingCreate = false;
         this.snackService.success(

@@ -12,3 +12,9 @@ export class AuthLoginDto {
   @IsString()
   password: string;
 }
+
+export class ResLoginDto {
+  @ApiProperty()
+  @IsString()
+  access_token: string;
+}

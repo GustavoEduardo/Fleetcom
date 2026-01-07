@@ -37,10 +37,16 @@ Ou, se preferir rodar em segundo plano:
 docker compose -f docker-compose.dev.yml up -d
 ```
 
-##### Para criar o usuários de teste e os primeiros dados rode (após subir a docker DEV):
+##### Para criar o usuários de teste e os primeiros dados rode (após subir a docker de dsenvolvimento):
 
 ``` bash
 docker compose -f docker-compose.dev.yml exec fleetcom-api npx prisma db seed
+```
+
+##### Para visualizar banco de dados (após subir a docker de dsenvolvimento):
+
+``` bash
+docker exec -it fleetcom-api npx prisma studio
 ```
 
 #### (Ambiente de Produção Unificado)
@@ -74,7 +80,7 @@ Após subir os serviços:
 -   **DOC API** disponível em:\
     👉 http://localhost:3000/docs
 
--   **MongoDB** disponível internamente no Docker
+-   **Postgresql** disponível internamente no Docker
 
 
 ------------------------------------------------------------------------
@@ -106,7 +112,7 @@ permitindo que usuários:
 O escopo solicitado contempla:
 
 -   **Frontend** → Angular 18\
--   **Backend** → Node.js + TypeScript + MongoDB\
+-   **Backend** → Node.js + TypeScript + Postgresql\
 -   **Autenticação** utilizando JWT\
 -   **Ambiente unificado com Docker**
 
@@ -120,7 +126,7 @@ O escopo solicitado contempla:
 -   TypeScript 5.7
 -   NestJs
 -   JWT
--   Mongoose (MongoDB)
+-   Prisma 6.14 (Postgresql)
 -   Bcrypt
 -   Multer
 -   Docker
@@ -135,7 +141,7 @@ O escopo solicitado contempla:
 ### **Infraestrutura**
 
 -   Docker Compose (ambiente dev com hot-reload)
--   MongoDB
+-   Postgresql
 
 ------------------------------------------------------------------------
 
@@ -145,13 +151,13 @@ O projeto está organizado em três serviços principais:
 
     /api        → Backend Node + TypeScript
     /frontend   → Aplicação Angular
-    /mongo      → Base de dados MongoDB
+    /postgresql      → Base de dados Postgresql
     docker-compose.dev.yml  → Sobe os três serviços simultaneamente
 
 O arquivo `docker-compose.dev.yml` faz o build de cada container e
 inicia:
 
--   MongoDB\
+-   Postgresql\
 -   API\
 -   Frontend (Angular)
 

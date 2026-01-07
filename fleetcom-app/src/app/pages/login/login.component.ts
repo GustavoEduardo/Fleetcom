@@ -46,11 +46,11 @@ export class LoginComponent {
 
       this.auth.login(this.formLogin.value).subscribe({
         next: (res: any) => {
-          this.auth.saveToken(res.access_token);
+          this.auth.saveToken(res.data?.access_token);
           this.loadingBt = false;
           this.router.navigate(['/home']);
         },
-        error: (err) => {
+        error: (err: { error: { message: any; }; }) => {
           this.loadingBt = false;
           this.snackService.error(
             err.error.message || 'Erro ao tentar efetuar o login'

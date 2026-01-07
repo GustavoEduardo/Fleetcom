@@ -17,7 +17,7 @@ export class AuthService {
     const match = await bcrypt.compare(data.password, user.password);
 
     if (!match) {
-      throw new UnauthorizedException('Usuário ou senha incorretos');
+      throw new UnauthorizedException('Usuário ou senha inválidos');
     }
 
     const payload = {

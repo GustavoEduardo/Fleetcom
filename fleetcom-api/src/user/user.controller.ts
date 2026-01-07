@@ -23,8 +23,8 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
-  ApiResponse,
 } from '@nestjs/swagger';
+import { ApiOkResponseWrapped } from 'src/common/decorators/api-ok-response.decorator';
 
 @Controller('user')
 export class UserController {
@@ -36,12 +36,10 @@ export class UserController {
     summary: 'Cria um usuário. (Apenas ADMIN)',
   })
   @ApiBody({ type: CreateUserDto })
-  @ApiResponse({
-    status: 200,
+  @ApiOkResponseWrapped(ResUserDto, {
     description: 'Usuário criado com sucesso',
-    type: [ResUserDto],
   })
-  @Roles('admin')
+  @Roles('ADMIN')
   create(@Body() data: CreateUserDto) {
     return this.userService.create(data);
   }
@@ -49,23 +47,17 @@ export class UserController {
   @Get()
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Lista todos os usuários' })
-  @ApiResponse({
-    status: 200,
-    description: 'Lista retornada com sucesso',
-    type: [ResUserDto],
+  @ApiOkResponseWrapped(ResUserDto, {
+    isArray: true,
   })
+  @Roles('ADMIN')
   findAll() {
     return this.userService.findAll();
   }
-
   @Get('info')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Retorna as informações do usuário logado' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-    type: [ResUserDto],
-  })
+  @ApiOkResponseWrapped(ResUserDto)
   loggedUser(@Req() req: { user: { sub: string } }) {
     return this.userService.findById(req.user.sub);
   }
@@ -74,11 +66,8 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Retorna um usuário ' })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-    type: ResUserDto,
-  })
+  @ApiOkResponseWrapped(ResUserDto)
+  @Roles('ADMIN')
   findById(@Param('id') id: string) {
     return this.userService.findById(id);
   }
@@ -90,12 +79,9 @@ export class UserController {
   })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiBody({ type: EditUserDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Usuário editado com sucesso',
-    type: ResUserDto,
-  })
-  update(@Param('id') id: string, @Body() data: Partial<any>) {
+  @ApiOkResponseWrapped(ResUserDto)
+  @Roles('ADMIN')
+  update(@Param('id') id: string, @Body() data: ResUserDto) {
     return this.userService.update(id, data);
   }
 
@@ -103,11 +89,8 @@ export class UserController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Remove um usuário  (Apenas ADMIN)' })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-  })
-  @Roles('admin')
+  @ApiOkResponseWrapped(ResUserDto)
+  @Roles('ADMIN')
   remove(@Param('id') id: string) {
     return this.userService.remove(id);
   }
@@ -117,10 +100,7 @@ export class UserController {
   @ApiOperation({ summary: 'Faz upload de imagem para um usuário' })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
   @ApiBody({ type: 'file' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-  })
+  @ApiOkResponseWrapped(ResUserDto)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({

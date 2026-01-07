@@ -1,19 +1,14 @@
 import { ApiProperty } from '@nestjs/swagger';
-import {
-  IsBoolean,
-  IsDateString,
-  IsMongoId,
-  IsOptional,
-} from 'class-validator';
+import { IsBoolean, IsDateString, IsUUID, IsOptional } from 'class-validator';
 
 export class CreateReservationDto {
   @ApiProperty()
-  @IsMongoId()
+  @IsUUID()
   vehicleId: string;
 
   @ApiProperty()
   @IsOptional()
-  @IsMongoId()
+  @IsUUID()
   userId?: string;
 
   @ApiProperty()
@@ -30,4 +25,23 @@ export class UpdateReservationDto {
   @IsOptional()
   @IsBoolean()
   cancelled?: boolean;
+}
+
+export class ResReservationDto {
+  @ApiProperty()
+  @IsUUID()
+  vehicleId: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsUUID()
+  userId?: string;
+
+  @ApiProperty()
+  @IsDateString()
+  reservedFrom: string;
+
+  @ApiProperty()
+  @IsDateString()
+  reservedUntil: string;
 }

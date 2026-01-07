@@ -13,7 +13,7 @@ import {
 import * as path from 'path';
 import * as fs from 'fs';
 import { PrismaService } from '../prisma/prisma.service';
-import { VehicleStatus } from '@prisma/client';
+import { Prisma, VehicleStatus } from '@prisma/client';
 
 @Injectable()
 export class VehicleService {
@@ -35,8 +35,15 @@ export class VehicleService {
         where: { id },
         data,
       });
-    } catch {
-      throw new NotFoundException('Veículo não encontrado');
+    } catch (error) {
+      if (
+        error instanceof Prisma.PrismaClientKnownRequestError &&
+        error.code === 'P2025'
+      ) {
+        throw new NotFoundException('Veículo não encontrado');
+      }
+
+      throw error;
     }
   }
 
@@ -77,6 +84,7 @@ export class VehicleService {
     return this.prisma.vehicle.findMany({
       where: {
         deletedAt: null,
+        id: filters.id,
         status: filters.status,
         type: filters.type ? { in: filters.type.split(',') } : undefined,
         year: filters.year ? { in: filters.year.split(',') } : undefined,

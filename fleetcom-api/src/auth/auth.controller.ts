@@ -1,13 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
 import { AuthService } from './auth.service';
-import { AuthLoginDto } from './authLoginDTO';
+import { AuthLoginDto, ResLoginDto } from './authLoginDTO';
 import { Public } from 'src/common/decorators/public.decorator';
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiOperation,
-  ApiResponse,
-} from '@nestjs/swagger';
+import { ApiBearerAuth, ApiBody, ApiOperation } from '@nestjs/swagger';
+import { ApiOkResponseWrapped } from 'src/common/decorators/api-ok-response.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -20,10 +16,7 @@ export class AuthController {
     summary: 'Faz o login. Aitenticação JWT',
   })
   @ApiBody({ type: AuthLoginDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Usuário criado com sucesso',
-  })
+  @ApiOkResponseWrapped(ResLoginDto)
   login(@Body() data: AuthLoginDto) {
     return this.authService.login(data);
   }

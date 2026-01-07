@@ -26,6 +26,7 @@ services:
       - ./fleetcom-api/.env
     ports:
       - "3000:3000"
+      - "5555:5555"
     volumes:
       - ./fleetcom-api:/app
       - /app/node_modules

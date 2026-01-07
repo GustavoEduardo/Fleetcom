@@ -1,10 +1,11 @@
 import {
   IsNotEmpty,
   IsString,
-  IsNumber,
   IsOptional,
   IsDateString,
   IsEnum,
+  MinLength,
+  MaxLength,
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { VehicleStatus } from '@prisma/client';
@@ -17,6 +18,8 @@ export class CreateVehicleDto {
 
   @ApiProperty()
   @IsString()
+  @MinLength(4)
+  @MaxLength(4)
   year: string;
 
   @ApiProperty()
@@ -50,7 +53,9 @@ export class UpdateVehicleDto {
 
   @ApiProperty()
   @IsOptional()
-  @IsNumber()
+  @IsString()
+  @MinLength(4)
+  @MaxLength(4)
   year?: string;
 
   @ApiProperty()
@@ -93,6 +98,11 @@ export class VehicleFilterDTO {
   @ApiProperty()
   @IsOptional()
   @IsString()
+  id?: string;
+
+  @ApiProperty()
+  @IsOptional()
+  @IsString()
   type?: string;
 
   @ApiProperty()
@@ -108,6 +118,8 @@ export class VehicleFilterDTO {
   @ApiProperty()
   @IsOptional()
   @IsString()
+  @MinLength(4)
+  @MaxLength(4)
   year?: string;
 
   @ApiProperty()

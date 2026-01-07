@@ -86,6 +86,7 @@ export class ProfileComponent {
   getLoggedUserInfo() {
     this.userService.getLoggedUserInfo().subscribe({
       next: (res) => {
+        console.log(res)
         this.user = res;
         this.formUser.get('name')?.setValue(res.name);
         this.formUser.get('email')?.setValue(res.email);
@@ -130,7 +131,7 @@ export class ProfileComponent {
 
   save() {
     if (this.formUser.valid) {
-      this.userService.editUser(this.user._id, this.formUser.value).subscribe({
+      this.userService.editUser(this.user.id, this.formUser.value).subscribe({
         next: (res) => {
           this.loading = false;
 
@@ -166,7 +167,7 @@ export class ProfileComponent {
     const formData = new FormData();
     formData.append('file', input.files[0]);
 
-    this.userService.uploadAvatar(this.user._id, formData).subscribe({
+    this.userService.uploadAvatar(this.user.id, formData).subscribe({
       next: (res) => {
         this.loading = false;
 

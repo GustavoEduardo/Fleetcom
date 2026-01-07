@@ -28,24 +28,21 @@ import {
   ApiBody,
   ApiOperation,
   ApiParam,
-  ApiResponse,
 } from '@nestjs/swagger';
+import { ApiOkResponseWrapped } from 'src/common/decorators/api-ok-response.decorator';
 
 @Controller('vehicle')
 export class VehicleController {
   constructor(private readonly vehicleService: VehicleService) {}
 
   @Post()
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Cria um veículo. Regra para Admin [role] ainda não implementada.',
+    summary: 'Cria um veículo. (Admin)',
   })
   @ApiBody({ type: CreateVehicleDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Veiculo criado com sucesso',
-    type: [CreateVehicleDto],
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto, { isArray: true })
   create(@Body() data: CreateVehicleDto) {
     return this.vehicleService.create(data);
   }
@@ -55,42 +52,32 @@ export class VehicleController {
   @ApiOperation({
     summary: 'Lista todos os veículos',
   })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-    type: [CreateVehicleDto],
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto, { isArray: true })
   findAll(@Query() filters: VehicleFilterDTO) {
     return this.vehicleService.findAll(filters);
   }
 
   @Patch(':id')
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Edita um veículo',
+    summary: 'Edita um veículo. (Admin)',
   })
   @ApiParam({ name: 'id', description: 'ID do veículo' })
   @ApiBody({ type: UpdateVehicleDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Veiculo editado com sucesso',
-    type: [CreateVehicleDto],
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto)
   update(@Param('id') id: string, @Body() data: UpdateVehicleDto) {
     return this.vehicleService.update(id, data);
   }
 
   @Delete(':id')
-  @Roles('admin')
+  @Roles('ADMIN')
   @ApiBearerAuth()
   @ApiOperation({
-    summary: 'Remove um veículo. (Apenas Admin)',
+    summary: 'Remove um veículo. (Admin)',
   })
   @ApiParam({ name: 'id', description: 'ID do veículo' })
-  @ApiResponse({
-    status: 200,
-    description: 'Removido com sucesso',
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto)
   remove(@Param('id') id: string) {
     return this.vehicleService.remove(id);
   }
@@ -101,11 +88,7 @@ export class VehicleController {
     summary: 'Reserva um veículo.',
   })
   @ApiBody({ type: ReserveVehicleDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Veiculo reservado com sucesso',
-    type: CreateVehicleDto,
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto)
   reserve(@Param('id') id: string, @Body() data: ReserveVehicleDto) {
     return this.vehicleService.reserveVehicle(id, data);
   }
@@ -116,11 +99,7 @@ export class VehicleController {
     summary: 'Libera um veículo reservado',
   })
   @ApiParam({ name: 'id', description: 'ID do veículo' })
-  @ApiResponse({
-    status: 200,
-    description: 'Veículo liberado com sucesso',
-    type: CreateVehicleDto,
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto)
   release(@Param('id') id: string) {
     return this.vehicleService.releaseVehicle(id);
   }
@@ -129,11 +108,7 @@ export class VehicleController {
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Lista os veículos reservados de um usuário' })
   @ApiParam({ name: 'userId', description: 'ID do usuário' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-    type: [CreateVehicleDto],
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto, { isArray: true })
   findReservedByUser(@Param('userId') userId: string) {
     return this.vehicleService.findReservedByUser(userId);
   }
@@ -143,10 +118,7 @@ export class VehicleController {
   @ApiOperation({ summary: 'Faz upload de imagem para um veículo' })
   @ApiParam({ name: 'id', description: 'ID do veículo' })
   @ApiBody({ type: 'file' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-  })
+  @ApiOkResponseWrapped(CreateVehicleDto)
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -175,6 +147,7 @@ export class VehicleController {
   @Get('filters')
   @ApiBearerAuth()
   @ApiOperation({ summary: 'Lista os possíveis filtros para os veículos' })
+  @ApiOkResponseWrapped(CreateVehicleDto)
   getVehicleFilters() {
     return this.vehicleService.getVehicleFilters();
   }

@@ -8,15 +8,16 @@ import {
 } from 'class-validator';
 import { ApiProperty } from '@nestjs/swagger';
 import { UserRole } from '@prisma/client';
+import { Exclude } from 'class-transformer';
 
 export class ResUserDto {
   @ApiProperty()
   @IsString()
-  name: string;
+  id: string;
 
   @ApiProperty()
   @IsString()
-  password: string;
+  name: string;
 
   @ApiProperty()
   @IsEmail()
@@ -62,7 +63,6 @@ export class CreateUserDto {
   @IsOptional()
   role?: UserRole = UserRole.USER;
 }
-
 export class EditUserDto {
   @ApiProperty()
   @IsOptional()

@@ -1,5 +1,5 @@
 export type Vehicle = {
-  _id: string;
+  id: string;
   name: string;
   year: string;
   type: string;

@@ -24,13 +24,26 @@ export class GlobalExceptionFilter implements ExceptionFilter {
     // console.error('-> Nome:', exception.name);
     // console.error('-> Completo:', exception);
 
-    const message = isHttpException
-      ? exception.getResponse()
-      : {
-          message: exception.message ?? 'Erro interno no servidor.',
-          error: exception.name ?? 'InternalError',
-        };
+    let responseBody: Record<string, any>;
 
-    response.status(status).json(message);
+    if (isHttpException) {
+      const exceptionResponse = exception.getResponse();
+
+      responseBody =
+        typeof exceptionResponse === 'string'
+          ? { message: exceptionResponse }
+          : exceptionResponse;
+    } else {
+      responseBody = {
+        message: exception.message ?? 'Erro interno no servidor.',
+        error: exception.name ?? 'InternalError',
+      };
+    }
+
+    response.status(status).json({
+      ...responseBody,
+      success: false,
+      timestamp: new Date().toISOString(),
+    });
   }
 }

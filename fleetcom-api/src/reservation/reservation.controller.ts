@@ -9,15 +9,15 @@ import {
   Query,
 } from '@nestjs/common';
 import { ReservationService } from './reservation.service';
-import { CreateReservationDto } from './reservation.dto';
+import { CreateReservationDto, ResReservationDto } from './reservation.dto';
 import { VehicleFilterDTO } from 'src/vehicle/vehicle.dto';
 import {
   ApiBearerAuth,
   ApiBody,
   ApiOperation,
   ApiParam,
-  ApiResponse,
 } from '@nestjs/swagger';
+import { ApiOkResponseWrapped } from 'src/common/decorators/api-ok-response.decorator';
 
 @Controller('reservation')
 export class ReservationController {
@@ -29,10 +29,7 @@ export class ReservationController {
     summary: 'Cria uma reserva.',
   })
   @ApiBody({ type: CreateReservationDto })
-  @ApiResponse({
-    status: 200,
-    description: 'Reserva criada com sucesso',
-  })
+  @ApiOkResponseWrapped(ResReservationDto)
   create(
     @Body() data: CreateReservationDto,
     @Req() req: { user: { sub: string } },
@@ -49,10 +46,7 @@ export class ReservationController {
     summary: 'Cancela uma reserva',
   })
   @ApiParam({ name: 'id', description: 'ID da reserva' })
-  @ApiResponse({
-    status: 200,
-    description: 'Reserva cancelada com sucesso',
-  })
+  @ApiOkResponseWrapped(ResReservationDto)
   cancel(@Param('id') id: string) {
     return this.reservationService.cancel(id);
   }
@@ -63,10 +57,7 @@ export class ReservationController {
     summary: 'Lista as reservas de um usuário',
   })
   @ApiParam({ name: 'id', description: 'ID do usuário' })
-  @ApiResponse({
-    status: 200,
-    description: 'Sucesso',
-  })
+  @ApiOkResponseWrapped(ResReservationDto, { isArray: true })
   listByUser(
     @Req() req: { user: { sub: string } },
     @Query() filters: VehicleFilterDTO,

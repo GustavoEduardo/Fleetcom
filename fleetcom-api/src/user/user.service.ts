@@ -21,6 +21,16 @@ export class UserService {
     private readonly configService: ConfigService,
   ) {}
 
+  selecDefault = {
+    id: true,
+    name: true,
+    email: true,
+    avatarUrl: true,
+    role: true,
+    createdAt: true,
+    updatedAt: true,
+  };
+
   async create(data: CreateUserDto) {
     if (data.password !== data.password_confirm) {
       throw new UnprocessableEntityException('As senhas não correspondem');
@@ -29,7 +39,6 @@ export class UserService {
     const existe = await this.prisma.user.findFirst({
       where: {
         email: data.email,
-        deletedAt: null,
       },
     });
 
@@ -63,21 +72,17 @@ export class UserService {
   async findAll() {
     return this.prisma.user.findMany({
       where: { deletedAt: null },
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        avatarUrl: true,
-        role: true,
-        createdAt: true,
-      },
+      select: this.selecDefault,
     });
   }
 
   async findById(id: string) {
     const user = await this.prisma.user.findFirst({
       where: { id, deletedAt: null },
+      select: this.selecDefault,
     });
+
+    console.log(user)
 
     if (!user) throw new NotFoundException('Nenhum usuário encontrado');
     return user;
@@ -96,7 +101,7 @@ export class UserService {
     });
 
     if (!user) {
-      throw new UnauthorizedException('Usuário ou senha incorretos');
+      throw new UnauthorizedException('Usuário ou senha inválidos');
     }
 
     return user;
@@ -140,6 +145,7 @@ export class UserService {
         avatarUrl: data.avatarUrl,
         password: data.password,
       },
+      select: this.selecDefault,
     });
   }
 

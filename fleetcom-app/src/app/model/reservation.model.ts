@@ -1,7 +1,7 @@
 import { Vehicle } from "./vehicle.model";
 
 export type Reservation = {
-  _id: string;
+  id: string;
   userId: string;
   reservedFrom: string;
   reservedUntil: string;

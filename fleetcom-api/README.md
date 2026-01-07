@@ -1,5 +1,5 @@
 
-# 🚗 Fleetcom API — NestJS + MongoDB + JWT + RBAC + Docker
+# 🚗 Fleetcom API — NestJS + Postgresql + JWT + RBAC + Docker
 API desenvolvida para controle de usuários, veículos e reservas, com autenticação JWT, níveis de acesso (roles) e documentação via Swagger (ainda em andamento).
 
 ---
@@ -11,7 +11,7 @@ Feita usando node v22.12.0
 | Tecnologia | Uso |
 |----------|-----|
 | NestJS | Estrutura principal da aplicação |
-| MongoDB + Mongoose | Banco de dados |
+| Postgresql + Prisma | Banco de dados |
 | JWT | Autenticação |
 | RBAC (roles) | Permissões Admin/User |
 | Docker & Docker Compose | Deploy containerizado |
@@ -44,10 +44,18 @@ docker compose up --build -d
 
 ---
 
-##### Para criar o usuários de teste e os primeiros dados rode (após subir a docker):
+##### Para criar o usuários de teste e os primeiros dados rode (após subir a docker de dsenvolvimento):
 
 ``` bash
 docker exec -it fleetcom-api npx prisma db seed
+```
+
+---
+
+##### Para visualizar banco de dados (após subir a docker de dsenvolvimento):
+
+``` bash
+docker exec -it fleetcom-api npx prisma studio
 ```
 
 
@@ -60,8 +68,8 @@ docker exec -it fleetcom-api npx prisma db seed
 ### 👤 Roles disponíveis
 ```ts
 enum UserRole {
-  USER = 'user',
-  ADMIN = 'admin'
+  USER = 'USER',
+  ADMIN = 'ADMIN'
 }
 ```
 
