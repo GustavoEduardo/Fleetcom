@@ -1,7 +1,7 @@
 {
 	"info": {
-		"_postman_id": "7717c08e-72f6-44d9-9c2e-b830f9845de7",
-		"name": "FLEETCOM",
+		"_postman_id": "5e197fa8-cbbf-421f-a091-53e747e943ce",
+		"name": "FEETCOM",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
 		"_exporter_id": "16481977"
 	},
@@ -30,7 +30,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Admin 1\",\n    \"email\": \"testeadmin@teste.com.br\",\n    \"password\": \"mudar123\",\n    \"password_confirm\": \"mudar123\",\n    \"role\": \"admin\"\n}",
+							"raw": "{\n    \"name\": \"User 5\",\n    \"email\": \"testeuser5@teste.com.br\",\n    \"password\": \"mudar123\",\n    \"password_confirm\": \"mudar123\",\n    \"role\": \"USER\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -70,7 +70,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Teste UP\"\n}",
+							"raw": "{\n    \"name\": \"Usuário de Teste\",\n    \"email\": \"testeuser1@teste.com.br\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -78,13 +78,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/user/6928460da89ca6331931de18",
+							"raw": "{{base_url}}/user/ffab0f4c-bf0f-4d0f-a68c-ba626a54e4ca",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"user",
-								"6928460da89ca6331931de18"
+								"ffab0f4c-bf0f-4d0f-a68c-ba626a54e4ca"
 							]
 						}
 					},
@@ -173,13 +173,13 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/user/6928460da89ca6331931de18",
+							"raw": "{{base_url}}/user/166c8d77-2b39-4b96-84cc-8fd4dc2d8f2a",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"user",
-								"6928460da89ca6331931de18"
+								"166c8d77-2b39-4b96-84cc-8fd4dc2d8f2a"
 							]
 						}
 					},
@@ -205,13 +205,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/user/69284531a89ca6331931de14",
+							"raw": "{{base_url}}/user/4d22a3ab-4ad5-4544-975d-7fa01b42dda6",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"user",
-								"69284531a89ca6331931de14"
+								"4d22a3ab-4ad5-4544-975d-7fa01b42dda6"
 							]
 						}
 					},
@@ -326,7 +326,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"name\": \"Toro\",\n    \"year\": 2016\n}",
+							"raw": "{\n    \"name\": \"Toro 22\",\n    \"year\": \"2018\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -334,13 +334,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/vehicle/692846dba89ca6331931de20",
+							"raw": "{{base_url}}/vehicle/602ce192-1d0b-428f-b35d-e64ff2a25a52",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"vehicle",
-								"692846dba89ca6331931de20"
+								"602ce192-1d0b-428f-b35d-e64ff2a25a52"
 							]
 						}
 					},
@@ -366,7 +366,7 @@
 						"method": "GET",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/vehicle",
+							"raw": "{{base_url}}/vehicle?status=AVAILABLE",
 							"host": [
 								"{{base_url}}"
 							],
@@ -386,8 +386,7 @@
 								},
 								{
 									"key": "status",
-									"value": "AVAILABLE",
-									"disabled": true
+									"value": "AVAILABLE"
 								},
 								{
 									"key": "year",
@@ -400,8 +399,13 @@
 									"disabled": true
 								},
 								{
-									"key": "name",
-									"value": "tor",
+									"key": "search",
+									"value": "Toro 22",
+									"disabled": true
+								},
+								{
+									"key": "id",
+									"value": "602ce192-1d0b-428f-b35d-e64ff2a25a52",
 									"disabled": true
 								}
 							]
@@ -461,13 +465,13 @@
 						"method": "DELETE",
 						"header": [],
 						"url": {
-							"raw": "{{base_url}}/vehicle/69286c9a50f66c20fcfde2ed",
+							"raw": "{{base_url}}/vehicle/602ce192-1d0b-428f-b35d-e64ff2a25a52",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"vehicle",
-								"69286c9a50f66c20fcfde2ed"
+								"602ce192-1d0b-428f-b35d-e64ff2a25a52"
 							]
 						}
 					},
@@ -498,18 +502,18 @@
 								{
 									"key": "file",
 									"type": "file",
-									"src": "/home/mastertax/Documentos/G/Logo_Happmobi_Tiffany.png"
+									"src": "/home/mastertax/Imagens/Capturas de tela/Captura de tela de 2025-12-23 14-06-53.png"
 								}
 							]
 						},
 						"url": {
-							"raw": "{{base_url}}/vehicle/692846dba89ca6331931de20/image",
+							"raw": "{{base_url}}/vehicle/602ce192-1d0b-428f-b35d-e64ff2a25a52/image",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"vehicle",
-								"692846dba89ca6331931de20",
+								"602ce192-1d0b-428f-b35d-e64ff2a25a52",
 								"image"
 							]
 						}
@@ -542,7 +546,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"vehicleId\": \"69286c9a50f66c20fcfde2ed\",\n    \"reservedFrom\": \"2025-11-27 20:00:00\",\n    \"reservedUntil\": \"2025-11-30 20:00:00\"\n}",
+							"raw": "{\n    \"vehicleId\": \"7e453334-7bf4-4458-a7ed-046a9e9e7e82\",\n    \"reservedFrom\": \"2026-01-07T03:00:00.000Z\",\n    \"reservedUntil\": \"2026-01-11T03:00:00.000Z\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
@@ -590,13 +594,13 @@
 							}
 						},
 						"url": {
-							"raw": "{{base_url}}/reservation/69284b02c61d38b87d3daa8f/cancel",
+							"raw": "{{base_url}}/reservation/7c6623f1-f410-43eb-b743-f63fdd86741f/cancel",
 							"host": [
 								"{{base_url}}"
 							],
 							"path": [
 								"reservation",
-								"69284b02c61d38b87d3daa8f",
+								"7c6623f1-f410-43eb-b743-f63fdd86741f",
 								"cancel"
 							]
 						}
@@ -647,7 +651,7 @@
 						"header": [],
 						"body": {
 							"mode": "raw",
-							"raw": "{\n    \"email\": \"admin@happmob.com\",\n    \"password\": \"admin123\"\n}",
+							"raw": "{\n    \"email\": \"admin@fleetcom.com\",\n    \"password\": \"admin123\"\n}",
 							"options": {
 								"raw": {
 									"language": "json"
